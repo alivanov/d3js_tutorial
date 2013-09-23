@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>D3 tutorial</title>
+</head>
+<body>
+
+    <script src="vendor/d3.v3.min.js"></script>
+
+    <script>
+
+        /*
+            DOM elements < data elements (enter selection)
+            DOM elements > data elements (exit selection)
+            DOM elements = data elements (update selection)
+        */
+        
+        var data = [40, 50, 80, 111, 203];
+        var r = 300;
+
+        var color = d3.scale.ordinal()
+            .range(["red", "blue", "orange", "yellow", "green"]);
+
+        var canvas = d3.select("body").append("svg")
+            .attr("width", 1500)
+            .attr("height", 1500);
+
+            var group = canvas.append("g")
+                .attr("transform", "translate(300, 300)");
+
+            //path generator    
+            var arc = d3.svg.arc()    
+                .innerRadius(200) //set radius to 0 to get the pie chart
+                .outerRadius(r);
+
+            //pie layout (returns start/end anles and data)
+            var pie = d3.layout.pie()
+                .value(function (d) { return d; });
+
+            var arcs = group.selectAll(".arc")
+                .data(pie(data))
+                .enter() //each arc will be a group of path and text
+                .append("g")
+                .attr("class", "arc");
+
+            //append path to each arc group   
+            arcs.append("path")
+                .attr("d", arc)
+                .attr("fill", function (d) { return color(d.data); });
+
+            //append text to each arc group   
+            arcs.append("text")
+                .attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")"; })
+                .attr("text-anchor", "middle")
+                .attr("font-size", "1.5em")
+                .text(function (d) { return d.data; });
+
+    </script>
+
+</body>
+</html>
