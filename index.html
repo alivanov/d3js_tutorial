@@ -16,60 +16,40 @@
         */
         
         var width = 500, 
-            height = 500, 
-            padding = 50;
+            height = 500;
 
-        d3.csv("mydata.csv", function (data) {
-            
-            var map = data.map(function (i) { return parseInt(i.age); })
-            console.log(map);
-            
-            var histogram = d3.layout.histogram() //provides x,y,dx values
-                .bins(8)(map)
-            console.log(histogram);
+        var color = d3.scale.category10();
 
-            var y = d3.scale.linear()
-                .domain([0, d3.max(histogram.map(function (i) { return i.length; }))])
-                .range([0, height])
-
-            var x = d3.scale.linear()
-                .domain([0, d3.max(map)])
-                .range([0, width]);
-
-            var xAxis = d3.svg.axis()
-                .scale(x)
-                .orient("bottom");
-
-            var canvas = d3.select("body").append("svg")
+        var canvas = d3.select("body").append("svg")
                 .attr("width", width)
-                .attr("height", height + padding)
-                .append("g")
-                    .attr("transform", "translate(20,0)");
+                .attr("height", height);
 
-            var group = canvas.append("g")
-                .attr("transform", "translate(0," + height + ")")
-                .call(xAxis);
-
-            var bars = canvas.selectAll(".bar")
-                .data(histogram)
-                .enter()
-                .append("g");
-
-            bars.append("rect")
-                .attr("x", function (d) { return x(d.x); })
-                .attr("y", function (d) { return width - y(d.y); })
-                .attr("width", function (d) { return x(d.dx); })
-                .attr("height", function (d) { return y(d.y); })
-                .attr("fill", "steelblue");
+        d3.json("mydata.json", function (data) {
             
-            bars.append("text")
-                .attr("x", function (d) { return x(d.x); })
-                .attr("y", function (d) { return 500 - y(d.y); })
-                .attr("dy", "20px")
-                .attr("dx", function (d) { return x(d.dx)/2; })
-                .attr("fill", "#fff")
+            var treemap = d3.layout.treemap() //x, y, dx, dy, area
+                .size([width, height])
+                .nodes(data);
+            console.log(treemap);
+
+            var cells = canvas.selectAll(".cell")
+                .data(treemap)
+                .enter()
+                .append("g")
+                    .attr("class", "cell");
+
+            cells.append("rect")
+                .attr("x", function (d) { return d.x; })
+                .attr("y", function (d) { return d.y; })
+                .attr("width", function (d) { return d.dx; })
+                .attr("height", function (d) { return d.dy; })
+                .attr("fill", function (d) { return d.children ? null : color(d.parent.name); }) //show only leaf nodes
+                .attr("stroke", "#fff");
+
+            cells.append("text")
+                .attr("x", function (d) { return d.x + d.dx / 2})
+                .attr("y", function (d) { return d.y + d.dy / 2})
                 .attr("text-anchor", "middle")
-                .text(function (d) { return d.y; })
+                .text(function (d) { return d.name; });
         });
 
     </script>

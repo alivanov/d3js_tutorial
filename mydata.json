@@ -17,6 +17,8 @@
             {"name": "Buffy", "value": 25}
          ]
         },
-        {"name": "MrX", "value": 75}
+        {"name": "MrX", 
+         "value": 75
+        }
     ]
 }
