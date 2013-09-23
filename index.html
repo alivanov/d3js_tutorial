@@ -15,45 +15,51 @@
             DOM elements = data elements (update selection)
         */
         
-        var data = [40, 50, 80, 111, 203];
-        var r = 300;
-
-        var color = d3.scale.ordinal()
-            .range(["red", "blue", "orange", "yellow", "green"]);
-
         var canvas = d3.select("body").append("svg")
-            .attr("width", 1500)
-            .attr("height", 1500);
+            .attr("width", 500)
+            .attr("height", 500)
+            .append("g")
+                .attr("transform", "translate(50, 50)");
 
-            var group = canvas.append("g")
-                .attr("transform", "translate(300, 300)");
+        var tree = d3.layout.tree()
+            .size([400, 400]);
 
-            //path generator    
-            var arc = d3.svg.arc()    
-                .innerRadius(200) //set radius to 0 to get the pie chart
-                .outerRadius(r);
+        d3.json("mydata.json", function (data) {
 
-            //pie layout (returns start/end anles and data)
-            var pie = d3.layout.pie()
-                .value(function (d) { return d; });
+            var nodes = tree.nodes(data); //get x and y coordinates
+            console.log(nodes);
+            var links = tree.links(nodes); //get source and target
+            console.log(links);
 
-            var arcs = group.selectAll(".arc")
-                .data(pie(data))
-                .enter() //each arc will be a group of path and text
+            var node = canvas.selectAll(".node")
+                .data(nodes)
+                .enter()
                 .append("g")
-                .attr("class", "arc");
+                    .attr("class", "node")
+                    .attr("transform", function (d) {
+                        return "translate(" + d.y + "," + d.x + ")"; //d.x, d.y to draw the tree from the top of screen
+                    });
 
-            //append path to each arc group   
-            arcs.append("path")
-                .attr("d", arc)
-                .attr("fill", function (d) { return color(d.data); });
+            node.append("circle")        
+                .attr("r", 5)
+                .attr("fill", "steelblue");
 
-            //append text to each arc group   
-            arcs.append("text")
-                .attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")"; })
-                .attr("text-anchor", "middle")
-                .attr("font-size", "1.5em")
-                .text(function (d) { return d.data; });
+            node.append("text")    
+                .text(function (d) { return d.name; })
+
+            var diagonal = d3.svg.diagonal()
+                .projection(function (d) { return [d.y, d.x] }); //d.x, d.y to draw the tree from the top of screen
+
+            canvas.selectAll(".link")
+                .data(links)
+                .enter()
+                .append("path")
+                    .attr("class", "link")
+                    .attr("fill", "none")
+                    .attr("stroke", "#ADADAD")
+                    .attr("d", diagonal);
+
+        });
 
     </script>
 
