@@ -15,7 +15,7 @@
             DOM elements = data elements (update selection)
         */
         
-        var width = 1500, height = 1500;
+        var width = 800, height = 600;
 
         var canvas = d3.select("body").append("svg")
             .attr("width", width)
@@ -23,42 +23,30 @@
             .append("g")
                 .attr("transform", "translate(50, 50)");
 
-        var tree = d3.layout.cluster()//or d3.layout.tree() to change MrX position
-            .size([400, 400]);
+        var pack = d3.layout.pack()
+            .size([width, height - 50])
+            .padding(10);
 
         d3.json("mydata.json", function (data) {
-
-            var nodes = tree.nodes(data); //get x and y coordinates
+            var nodes = pack.nodes(data); //provides x,y,r, etc...
             console.log(nodes);
-            var links = tree.links(nodes); //get source and target
-            console.log(links);
 
             var node = canvas.selectAll(".node")
                 .data(nodes)
                 .enter()
                 .append("g")
                     .attr("class", "node")
-                    .attr("transform", function (d) {
-                        return "translate(" + d.y + "," + d.x + ")"; //d.x, d.y to draw the tree from the top of screen
-                    });
-            node.append("circle")        
-                .attr("r", 5)
-                .attr("fill", "steelblue");
+                    .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
 
-            node.append("text")    
-                .text(function (d) { return d.name; })
+            node.append("circle")
+                .attr("r", function (d) { return d.r;} )
+                .attr("fill", "steelblue")
+                .attr("opacity", 0.25)
+                .attr("stroke", "red")
+                .attr("stroke-width", "2");
 
-            var diagonal = d3.svg.diagonal()
-                .projection(function (d) { return [d.y, d.x] }); //d.x, d.y to draw the tree from the top of screen
-
-            canvas.selectAll(".link")
-                .data(links)
-                .enter()
-                .append("path")
-                    .attr("class", "link")
-                    .attr("fill", "none")
-                    .attr("stroke", "#ADADAD")
-                    .attr("d", diagonal);
+            node.append("text")
+                .text(function (d) { return d.children ? "" : d.name; }) //display only leaf nodes labels
 
         });
 
